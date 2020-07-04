@@ -223,6 +223,21 @@ projectTest(parallel = true) {
     dependsOn(":dist")
     workingDir = rootDir
 
+    inputs.dir(rootDir.resolve("dist"))
+
+    inputs.dir(rootDir.resolve("compiler/cli/cli-common/resources")) // compiler.xml
+
+    inputs.dir(rootDir.resolve("compiler/testData/mockJDK"))
+    inputs.dir(rootDir.resolve("compiler/testData/mockJDK9"))
+    inputs.dir(rootDir.resolve("compiler/testData/mockJDKModified"))
+
+    inputs.dir(rootDir.resolve("compiler/testData/asJava"))
+    inputs.dir(rootDir.resolve("compiler/testData/loadJava"))
+
+    inputs.dir(projectDir.resolve("testData"))
+    inputs.dir(projectDir.resolve("idea-completion/testData"))
+    inputs.dir(projectDir.resolve("idea-live-templates/testData"))
+
     useJUnitPlatform()
     distribution {
         enabled.set(true)
