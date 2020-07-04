@@ -3,6 +3,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 plugins {
     kotlin("jvm")
     id("jps-compatible")
+    id("com.gradle.enterprise.test-distribution") version "1.0.2"
 }
 
 val kotlinVersion: String by rootProject.extra
@@ -197,6 +198,8 @@ dependencies {
     if (Ide.AS41.orHigher()) {
         testRuntime(intellijPluginDep("platform-images"))
     }
+
+    testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.6.2")
 }
 
 tasks.named<Copy>("processResources") {
@@ -219,6 +222,11 @@ tasks.named<Copy>("processResources") {
 projectTest(parallel = true) {
     dependsOn(":dist")
     workingDir = rootDir
+
+    useJUnitPlatform()
+    distribution {
+        enabled.set(true)
+    }
 }
 
 configureFormInstrumentation()
