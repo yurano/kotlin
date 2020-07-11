@@ -584,6 +584,7 @@ private class AddContinuationLowering(private val context: JvmBackendContext) : 
 
                 if (flag.capturesCrossinline || function.isInline) {
                     result += buildFunWithDescriptorForInlining(view.descriptor) {
+                        originalDeclaration = view.originalDeclaration
                         name = Name.identifier(view.name.asString() + FOR_INLINE_SUFFIX)
                         returnType = view.returnType
                         modality = view.modality
@@ -653,6 +654,7 @@ private fun IrFunction.createSuspendFunctionStub(context: JvmBackendContext): Ir
     require(this.isSuspend && this is IrSimpleFunction)
     return buildFunWithDescriptorForInlining(descriptor) {
         updateFrom(this@createSuspendFunctionStub)
+        originalDeclaration = this@createSuspendFunctionStub.originalDeclaration
         name = this@createSuspendFunctionStub.name
         origin = this@createSuspendFunctionStub.origin
         returnType = context.irBuiltIns.anyNType

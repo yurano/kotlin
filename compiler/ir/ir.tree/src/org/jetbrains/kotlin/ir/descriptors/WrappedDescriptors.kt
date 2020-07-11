@@ -383,13 +383,6 @@ open class WrappedSimpleFunctionDescriptor(
     sourceElement: SourceElement = SourceElement.NO_SOURCE
 ) : SimpleFunctionDescriptor, WrappedCallableDescriptor<IrSimpleFunction>(annotations, sourceElement) {
 
-    // TODO: Remove as soon as all IR declarations have their originalDescriptor.
-    constructor(originalDescriptor: FunctionDescriptor) : this(originalDescriptor.annotations, originalDescriptor.source) {
-        this.originalDescriptor = originalDescriptor
-    }
-
-    var originalDescriptor: FunctionDescriptor? = null
-
     override fun getOverriddenDescriptors() = owner.overriddenSymbols.map { it.descriptor }
 
     override fun getContainingDeclaration(): DeclarationDescriptor = getContainingDeclaration(owner)

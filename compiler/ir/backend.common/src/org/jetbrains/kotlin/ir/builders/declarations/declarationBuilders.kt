@@ -127,15 +127,14 @@ fun IrFunctionBuilder.buildFun(originalDescriptor: FunctionDescriptor? = null): 
         is DescriptorWithContainerSource -> WrappedFunctionDescriptorWithContainerSource(originalDescriptor.containerSource)
         is PropertyGetterDescriptor -> WrappedPropertyGetterDescriptor(originalDescriptor.annotations, originalDescriptor.source)
         is PropertySetterDescriptor -> WrappedPropertySetterDescriptor(originalDescriptor.annotations, originalDescriptor.source)
-        null -> WrappedSimpleFunctionDescriptor()
-        else -> WrappedSimpleFunctionDescriptor(originalDescriptor)
+        else -> WrappedSimpleFunctionDescriptor()
     }
     return IrFunctionImpl(
         startOffset, endOffset, origin,
         IrSimpleFunctionSymbolImpl(wrappedDescriptor),
         name, visibility, modality, returnType,
         isInline = isInline, isExternal = isExternal, isTailrec = isTailrec, isSuspend = isSuspend, isExpect = isExpect,
-        isFakeOverride = isFakeOverride, isOperator = isOperator
+        isFakeOverride = isFakeOverride, isOperator = isOperator, originalDeclaration = originalDeclaration
     ).also {
         wrappedDescriptor.bind(it)
     }
@@ -148,7 +147,8 @@ fun IrFunctionBuilder.buildConstructor(): IrConstructor {
         IrConstructorSymbolImpl(wrappedDescriptor),
         Name.special("<init>"),
         visibility, returnType,
-        isInline = isInline, isExternal = isExternal, isPrimary = isPrimary, isExpect = isExpect
+        isInline = isInline, isExternal = isExternal, isPrimary = isPrimary, isExpect = isExpect,
+        originalDeclaration = originalDeclaration
     ).also {
         wrappedDescriptor.bind(it)
     }

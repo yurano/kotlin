@@ -516,6 +516,7 @@ private fun IrFunction.generateDefaultsFunctionImpl(
         is IrSimpleFunction ->
             buildFunWithDescriptorForInlining(descriptor) {
                 updateFrom(this@generateDefaultsFunctionImpl)
+                originalDeclaration = this@generateDefaultsFunctionImpl.originalDeclaration
                 name = Name.identifier("${this@generateDefaultsFunctionImpl.name}\$default")
                 origin = newOrigin
                 this.isFakeOverride = isFakeOverride

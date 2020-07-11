@@ -11,6 +11,7 @@ import org.jetbrains.kotlin.descriptors.Visibility
 import org.jetbrains.kotlin.ir.ObsoleteDescriptorBasedAPI
 import org.jetbrains.kotlin.ir.declarations.IrAttributeContainer
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
+import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.declarations.impl.carriers.FunctionCarrier
 import org.jetbrains.kotlin.ir.descriptors.WrappedSimpleFunctionDescriptor
@@ -34,9 +35,12 @@ abstract class IrFunctionCommonImpl(
     override val isSuspend: Boolean,
     override val isOperator: Boolean,
     isExpect: Boolean,
-    override val isFakeOverride: Boolean
+    override val isFakeOverride: Boolean,
+    originalDeclaration: IrFunction?
 ) :
-    IrFunctionBase<FunctionCarrier>(startOffset, endOffset, origin, name, visibility, isInline, isExternal, isExpect, returnType),
+    IrFunctionBase<FunctionCarrier>(
+        startOffset, endOffset, origin, name, visibility, isInline, isExternal, isExpect, returnType, originalDeclaration
+    ),
     IrSimpleFunction,
     FunctionCarrier {
 
@@ -92,9 +96,10 @@ class IrFunctionImpl(
     override val isSuspend: Boolean,
     override val isOperator: Boolean,
     isExpect: Boolean,
-    override val isFakeOverride: Boolean = origin == IrDeclarationOrigin.FAKE_OVERRIDE
+    override val isFakeOverride: Boolean = origin == IrDeclarationOrigin.FAKE_OVERRIDE,
+    originalDeclaration: IrFunction? = null
 ) : IrFunctionCommonImpl(startOffset, endOffset, origin, name, visibility, modality, returnType, isInline,
-    isExternal, isTailrec, isSuspend, isOperator, isExpect, isFakeOverride) {
+                         isExternal, isTailrec, isSuspend, isOperator, isExpect, isFakeOverride, originalDeclaration) {
 
     @ObsoleteDescriptorBasedAPI
     override val descriptor: FunctionDescriptor get() = symbol.descriptor
@@ -122,8 +127,8 @@ class IrFakeOverrideFunctionImpl(
     isOperator: Boolean,
     isExpect: Boolean
 ) : IrFunctionCommonImpl(startOffset, endOffset, origin, name, visibility, modality, returnType, isInline,
-    isExternal, isTailrec, isSuspend, isOperator, isExpect,
-    isFakeOverride = true)
+                         isExternal, isTailrec, isSuspend, isOperator, isExpect,
+                         isFakeOverride = true, originalDeclaration = null)
 {
     private var _symbol: IrSimpleFunctionSymbol? = null
 

@@ -20,8 +20,6 @@ import java.io.File
 
 val IrConstructor.constructedClass get() = this.parent as IrClass
 
-val <T : IrDeclaration> T.original get() = this
-
 val IrDeclarationParent.fqNameForIrSerialization: FqName
     get() = when (this) {
         is IrPackageFragment -> this.fqName

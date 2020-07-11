@@ -592,7 +592,7 @@ class LocalDeclarationsLowering(
             assert(oldDeclaration.dispatchReceiverParameter == null)
 
             val memberOwner = localFunctionContext.ownerForLoweredDeclaration
-            val newDescriptor = WrappedSimpleFunctionDescriptor(oldDeclaration.descriptor)
+            val newDescriptor = WrappedSimpleFunctionDescriptor()
             val newSymbol = IrSimpleFunctionSymbolImpl(newDescriptor)
             val newName = generateNameForLiftedDeclaration(oldDeclaration, memberOwner)
 
@@ -618,7 +618,8 @@ class LocalDeclarationsLowering(
                 isSuspend = oldDeclaration.isSuspend,
                 isExpect = oldDeclaration.isExpect,
                 isFakeOverride = oldDeclaration.isFakeOverride,
-                isOperator = oldDeclaration.isOperator
+                isOperator = oldDeclaration.isOperator,
+                originalDeclaration = oldDeclaration.originalDeclaration
             )
             newDescriptor.bind(newDeclaration)
 

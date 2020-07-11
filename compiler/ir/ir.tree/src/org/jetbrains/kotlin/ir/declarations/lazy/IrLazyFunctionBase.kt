@@ -71,6 +71,8 @@ abstract class IrLazyFunctionBase(
         get() = null
         set(_) = error("We should never need to store metadata of external declarations.")
 
+    override val originalDeclaration: IrFunction get() = this
+
     override fun <D> acceptChildren(visitor: IrElementVisitor<Unit, D>, data: D) {
         typeParameters.forEach { it.accept(visitor, data) }
 

@@ -43,6 +43,8 @@ interface IrFunction :
     var valueParameters: List<IrValueParameter>
 
     var body: IrBody?
+
+    val originalDeclaration: IrFunction
 }
 
 @ObsoleteDescriptorBasedAPI
