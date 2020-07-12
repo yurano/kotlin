@@ -19,6 +19,8 @@ import org.jetbrains.kotlin.ir.util.transformIfNeeded
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformer
 import org.jetbrains.kotlin.ir.visitors.IrElementVisitor
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.serialization.deserialization.descriptors.DescriptorWithContainerSource
+import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedContainerSource
 
 @OptIn(ObsoleteDescriptorBasedAPI::class)
 abstract class IrLazyFunctionBase(
@@ -72,6 +74,8 @@ abstract class IrLazyFunctionBase(
         set(_) = error("We should never need to store metadata of external declarations.")
 
     override val originalDeclaration: IrFunction get() = this
+    override val containerSource: DeserializedContainerSource?
+        get() = (descriptor as? DescriptorWithContainerSource)?.containerSource
 
     override fun <D> acceptChildren(visitor: IrElementVisitor<Unit, D>, data: D) {
         typeParameters.forEach { it.accept(visitor, data) }

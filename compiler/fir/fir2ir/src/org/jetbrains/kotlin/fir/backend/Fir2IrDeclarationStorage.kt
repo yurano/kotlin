@@ -396,7 +396,8 @@ class Fir2IrDeclarationStorage(
                     isSuspend = isSuspend,
                     isExpect = simpleFunction?.isExpect == true,
                     isFakeOverride = updatedOrigin == IrDeclarationOrigin.FAKE_OVERRIDE,
-                    isOperator = simpleFunction?.isOperator == true
+                    isOperator = simpleFunction?.isOperator == true,
+                    containerSource = simpleFunction?.containerSource
                 ).apply {
                     metadata = FirMetadataSource.Function(function)
                     convertAnnotationsFromLibrary(function)
@@ -508,9 +509,11 @@ class Fir2IrDeclarationStorage(
     ): IrSimpleFunction {
         val prefix = if (isSetter) "set" else "get"
         val signature = signatureComposer.composeAccessorSignature(property, isSetter)
+        val containerSource =
+            (correspondingProperty.descriptor as? WrappedPropertyDescriptorWithContainerSource)?.containerSource
         return declareIrAccessor(
             signature,
-            (correspondingProperty.descriptor as? WrappedPropertyDescriptorWithContainerSource)?.containerSource,
+            containerSource,
             isGetter = !isSetter
         ) { symbol ->
             val accessorReturnType = if (isSetter) irBuiltIns.unitType else propertyType
@@ -523,7 +526,8 @@ class Fir2IrDeclarationStorage(
                 isExternal = propertyAccessor?.isExternal == true,
                 isTailrec = false, isSuspend = false, isExpect = false,
                 isFakeOverride = origin == IrDeclarationOrigin.FAKE_OVERRIDE,
-                isOperator = false
+                isOperator = false,
+                containerSource = containerSource
             ).apply {
                 correspondingPropertySymbol = correspondingProperty.symbol
                 if (propertyAccessor != null) {
@@ -909,7 +913,14 @@ class Fir2IrDeclarationStorage(
                                     firFunctionSymbol is FirNamedFunctionSymbol && firFunctionSymbol.isFakeOverride &&
                                             firFunctionSymbol.callableId != firFunctionSymbol.overriddenSymbol?.callableId
                                 Fir2IrLazySimpleFunction(
-                                    components, startOffset, endOffset, parentOrigin, firDeclaration, symbol, isFakeOverride
+                                    components,
+                                    startOffset,
+                                    endOffset,
+                                    parentOrigin,
+                                    firDeclaration,
+                                    symbol,
+                                    isFakeOverride,
+                                    firDeclaration.containerSource
                                 ).apply {
                                     parent = irParent
                                 }

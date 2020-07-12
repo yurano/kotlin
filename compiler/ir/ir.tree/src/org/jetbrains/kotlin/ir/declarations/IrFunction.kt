@@ -23,6 +23,7 @@ import org.jetbrains.kotlin.ir.expressions.IrBody
 import org.jetbrains.kotlin.ir.expressions.IrExpressionBody
 import org.jetbrains.kotlin.ir.symbols.IrFunctionSymbol
 import org.jetbrains.kotlin.ir.types.IrType
+import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedContainerSource
 
 interface IrFunction :
     IrDeclarationWithName, IrDeclarationWithVisibility, IrTypeParametersContainer, IrSymbolOwner, IrDeclarationParent, IrReturnTarget,
@@ -45,6 +46,7 @@ interface IrFunction :
     var body: IrBody?
 
     val originalDeclaration: IrFunction
+    val containerSource: DeserializedContainerSource?
 }
 
 @ObsoleteDescriptorBasedAPI

@@ -27,6 +27,7 @@ import org.jetbrains.kotlin.ir.symbols.IrConstructorSymbol
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.visitors.IrElementVisitor
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedContainerSource
 
 class IrConstructorImpl(
     startOffset: Int,
@@ -40,14 +41,15 @@ class IrConstructorImpl(
     isExternal: Boolean,
     override val isPrimary: Boolean,
     isExpect: Boolean,
-    originalDeclaration: IrFunction? = null
+    originalDeclaration: IrFunction? = null,
+    containerSource: DeserializedContainerSource? = null
 ) :
     IrFunctionBase<ConstructorCarrier>(
         startOffset, endOffset, origin, name,
         visibility,
         isInline, isExternal, isExpect,
         returnType,
-        originalDeclaration
+        originalDeclaration, containerSource
     ),
     IrConstructor,
     ConstructorCarrier {

@@ -456,9 +456,9 @@ open class WrappedSimpleFunctionDescriptor(
 }
 
 @OptIn(ObsoleteDescriptorBasedAPI::class)
-class WrappedFunctionDescriptorWithContainerSource(
-    override val containerSource: DeserializedContainerSource?
-) : WrappedSimpleFunctionDescriptor(), DescriptorWithContainerSource
+class WrappedFunctionDescriptorWithContainerSource : WrappedSimpleFunctionDescriptor(), DescriptorWithContainerSource {
+    override val containerSource: DeserializedContainerSource? get() = owner.containerSource
+}
 
 @OptIn(ObsoleteDescriptorBasedAPI::class)
 open class WrappedClassConstructorDescriptor(

@@ -26,6 +26,7 @@ import org.jetbrains.kotlin.ir.util.transformIfNeeded
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformer
 import org.jetbrains.kotlin.ir.visitors.IrElementVisitor
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedContainerSource
 
 abstract class IrFunctionBase<T : FunctionBaseCarrier>(
     startOffset: Int,
@@ -37,7 +38,8 @@ abstract class IrFunctionBase<T : FunctionBaseCarrier>(
     override val isExternal: Boolean,
     override val isExpect: Boolean,
     returnType: IrType,
-    private val _originalDeclaration: IrFunction?
+    private val _originalDeclaration: IrFunction?,
+    override val containerSource: DeserializedContainerSource?
 ) :
     IrDeclarationBase<T>(startOffset, endOffset, origin),
     IrFunction,
