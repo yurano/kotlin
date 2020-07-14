@@ -15,6 +15,7 @@ import org.jetbrains.kotlin.codegen.state.GenerationState
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor
 import org.jetbrains.kotlin.ir.declarations.*
+import org.jetbrains.kotlin.ir.descriptors.toIrBasedDescriptor
 import org.jetbrains.kotlin.ir.expressions.*
 import org.jetbrains.kotlin.ir.types.*
 import org.jetbrains.kotlin.ir.util.*
@@ -36,7 +37,7 @@ class IrInlineCodegen(
     reifiedTypeInliner: ReifiedTypeInliner<IrType>
 ) :
     InlineCodegen<ExpressionCodegen>(
-        codegen, state, function.descriptor, methodOwner, signature, typeParameterMappings, sourceCompiler, reifiedTypeInliner
+        codegen, state, function.toIrBasedDescriptor(), methodOwner, signature, typeParameterMappings, sourceCompiler, reifiedTypeInliner
     ),
     IrCallGenerator {
 
