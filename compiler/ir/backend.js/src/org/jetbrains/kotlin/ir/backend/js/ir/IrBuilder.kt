@@ -125,6 +125,7 @@ object JsIrBuilder {
         isSuspend: Boolean = false,
         isExpect: Boolean = false,
         isOperator: Boolean = false,
+        isInfix: Boolean = false,
         isFakeOverride: Boolean = false,
         origin: IrDeclarationOrigin = SYNTHESIZED_DECLARATION
     ): IrSimpleFunction {
@@ -144,7 +145,8 @@ object JsIrBuilder {
             isSuspend = isSuspend,
             isExpect = isExpect,
             isFakeOverride = isFakeOverride,
-            isOperator = isOperator
+            isOperator = isOperator,
+            isInfix = isInfix
         ).also {
             descriptor.bind(it)
             it.parent = parent

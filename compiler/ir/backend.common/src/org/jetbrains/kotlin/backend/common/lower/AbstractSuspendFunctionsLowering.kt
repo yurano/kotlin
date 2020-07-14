@@ -487,7 +487,8 @@ abstract class AbstractSuspendFunctionsLowering<C : CommonBackendContext>(val co
                 isSuspend = false,
                 isExpect = false,
                 isFakeOverride = false,
-                isOperator = false
+                isOperator = false,
+                isInfix = false
             ).apply {
                 d.bind(this)
                 parent = coroutineClass
@@ -554,7 +555,8 @@ abstract class AbstractSuspendFunctionsLowering<C : CommonBackendContext>(val co
                 isSuspend = true,
                 isExpect = false,
                 isFakeOverride = false,
-                isOperator = false
+                isOperator = false,
+                isInfix = false
             ).apply {
                 d.bind(this)
                 parent = coroutineClass
@@ -614,7 +616,8 @@ abstract class AbstractSuspendFunctionsLowering<C : CommonBackendContext>(val co
                     isSuspend = stateMachineFunction.isSuspend,
                     isExpect = stateMachineFunction.isExpect,
                     isFakeOverride = false,
-                    isOperator = false
+                    isOperator = false,
+                    isInfix = false
                 ).apply {
                     d.bind(this)
                     parent = coroutineClass

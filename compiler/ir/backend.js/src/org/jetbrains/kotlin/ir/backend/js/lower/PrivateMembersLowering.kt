@@ -60,7 +60,8 @@ class PrivateMembersLowering(val context: JsIrBackendContext) : DeclarationTrans
                 returnType,
                 isInline = isInline, isExternal = isExternal, isTailrec = isTailrec, isSuspend = isSuspend, isExpect = isExpect,
                 isFakeOverride = isFakeOverride,
-                isOperator = isOperator
+                isOperator = isOperator,
+                isInfix = isInfix
             ).also {
                 descriptor.bind(it)
                 it.parent = parent

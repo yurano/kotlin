@@ -233,7 +233,8 @@ class DataClassMembersGenerator(val components: Fir2IrComponents) {
                     isSuspend = false,
                     isExpect = false,
                     isFakeOverride = false,
-                    isOperator = false
+                    isOperator = false,
+                    isInfix = false
                 ).apply {
                     val irValueParameter = valueParameterBuilder(this)?.let {
                         this.valueParameters = listOf(it)

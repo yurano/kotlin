@@ -98,7 +98,7 @@ class CreateScriptFunctionsPhase(val context: CommonBackendContext) : FileLoweri
             Name.identifier(name),
             Visibilities.PRIVATE, Modality.FINAL, returnType,
             isInline = false, isExternal = false, isTailrec = false, isSuspend = false, isExpect = false, isFakeOverride = false,
-            isOperator = false
+            isOperator = false, isInfix = false
         ).also {
             descriptor.bind(it)
             it.parent = irScript

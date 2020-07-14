@@ -135,7 +135,7 @@ fun IrFunctionBuilder.buildFun(originalDescriptor: FunctionDescriptor? = null): 
         IrSimpleFunctionSymbolImpl(wrappedDescriptor),
         name, visibility, modality, returnType,
         isInline = isInline, isExternal = isExternal, isTailrec = isTailrec, isSuspend = isSuspend, isExpect = isExpect,
-        isFakeOverride = isFakeOverride, isOperator = isOperator
+        isFakeOverride = isFakeOverride, isOperator = isOperator, isInfix = isInfix
     ).also {
         wrappedDescriptor.bind(it)
     }

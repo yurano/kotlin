@@ -537,7 +537,8 @@ fun IrClass.addFakeOverridesViaIncorrectHeuristic(implementedMembers: List<IrSim
                 isSuspend = irFunction.isSuspend,
                 isExpect = irFunction.isExpect,
                 isFakeOverride = true,
-                isOperator = irFunction.isOperator
+                isOperator = irFunction.isOperator,
+                isInfix = irFunction.isInfix
             ).apply {
                 descriptor.bind(this)
                 parent = this@addFakeOverridesViaIncorrectHeuristic
@@ -587,7 +588,8 @@ fun createStaticFunctionWithReceivers(
         isSuspend = oldFunction.isSuspend,
         isExpect = oldFunction.isExpect,
         isFakeOverride = isFakeOverride,
-        isOperator = oldFunction is IrSimpleFunction && oldFunction.isOperator
+        isOperator = oldFunction is IrSimpleFunction && oldFunction.isOperator,
+        isInfix = oldFunction is IrSimpleFunction && oldFunction.isInfix
     ).apply {
         descriptor.bind(this)
         parent = irParent
