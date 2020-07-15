@@ -1,3 +1,8 @@
+/*
+ * Copyright 2010-2020 JetBrains s.r.o. and Kotlin Programming Language contributors.
+ * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
+ */
+
 package org.jetbrains.kotlin.tools.projectWizard.ir.buildsystem.gradle
 
 import org.jetbrains.kotlin.tools.projectWizard.ir.buildsystem.FreeIR
@@ -11,6 +16,9 @@ data class AndroidConfigIR(val javaPackage: JavaPackage?) : AndroidIR, FreeIR {
     override fun GradlePrinter.renderGradle() {
         sectionCall("android", needIndent = true) {
             call("compileSdkVersion") { +"29" }; nlIndented() // TODO dehardcode
+            if (javaPackage == null) {
+                relocateManifest()
+            }
             sectionCall("defaultConfig", needIndent = true) {
                 if (javaPackage != null) {
                     assignmentOrCall("applicationId") { +javaPackage.asCodePackage().quotified }; nlIndented()
