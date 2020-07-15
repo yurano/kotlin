@@ -6,21 +6,14 @@
 package org.jetbrains.kotlin.tools.projectWizard.settings.buildsystem
 
 import org.jetbrains.kotlin.tools.projectWizard.core.*
-import org.jetbrains.kotlin.tools.projectWizard.core.asSingletonList
 import org.jetbrains.kotlin.tools.projectWizard.ir.buildsystem.BuildSystemIR
 import org.jetbrains.kotlin.tools.projectWizard.ir.buildsystem.DependencyType
 import org.jetbrains.kotlin.tools.projectWizard.ir.buildsystem.GradleRootProjectDependencyIR
 import org.jetbrains.kotlin.tools.projectWizard.ir.buildsystem.ModuleDependencyIR
-import org.jetbrains.kotlin.tools.projectWizard.ir.buildsystem.gradle.*
+import org.jetbrains.kotlin.tools.projectWizard.ir.buildsystem.gradle.irsList
 import org.jetbrains.kotlin.tools.projectWizard.moduleConfigurators.*
 import org.jetbrains.kotlin.tools.projectWizard.plugins.buildSystem.isGradle
 import org.jetbrains.kotlin.tools.projectWizard.plugins.kotlin.ModulesToIrConversionData
-import org.jetbrains.kotlin.tools.projectWizard.plugins.kotlin.isIOS
-import org.jetbrains.kotlin.tools.projectWizard.plugins.printer.GradlePrinter
-import org.jetbrains.kotlin.tools.projectWizard.plugins.projectPath
-import org.jetbrains.kotlin.tools.projectWizard.plugins.templates.TemplatesPlugin
-import org.jetbrains.kotlin.tools.projectWizard.templates.FileTemplate
-import org.jetbrains.kotlin.tools.projectWizard.templates.FileTemplateDescriptor
 import java.nio.file.Path
 import kotlin.reflect.KClass
 
@@ -86,13 +79,7 @@ sealed class ModuleDependencyType(
         ): TaskResult<Unit> = withSettingsOf(from) {
             IOSSinglePlatformModuleConfigurator.dependentModule.reference
                 .setValue(IOSSinglePlatformModuleConfigurator.DependentModuleReference(to))
-            val dummyFilePath = Defaults.SRC_DIR / "${to.iosTargetSafe()!!.name}Main" / to.configurator.kotlinDirectoryName / "dummyFile.kt"
-            TemplatesPlugin::addFileTemplate.execute(
-                FileTemplate(
-                    FileTemplateDescriptor("ios/dummyFile.kt", dummyFilePath),
-                    projectPath / toModulePath
-                )
-            )
+            locateDummyFile(to.iosTargetSafe()!!.name, to.configurator.kotlinDirectoryName, toModulePath)
         }
 
         override fun additionalAcceptanceChecker(from: Module, to: Module): Boolean =
@@ -109,28 +96,7 @@ sealed class ModuleDependencyType(
 
 
             return irsList {
-                +GradleConfigureTaskIR(GradleByClassTasksCreateIR("packForXcode", "Sync")) {
-                    "group" assign const("build")
-                    "mode" createValue GradleBinaryExpressionIR(
-                        raw { +"System.getenv("; +"CONFIGURATION".quotified; +")" },
-                        "?:",
-                        const("DEBUG")
-                    )
-                    "framework" createValue raw {
-                        +"kotlin.targets."
-                        when (dsl) {
-                            GradlePrinter.GradleDsl.KOTLIN -> +"""getByName<KotlinNativeTarget>("$iosTargetName")"""
-                            GradlePrinter.GradleDsl.GROOVY -> +iosTargetName
-                        }
-                        +".binaries.getFramework(mode)"
-                    };
-
-                    addRaw { +"inputs.property(${"mode".quotified}, mode)" }
-                    addRaw("dependsOn(framework.linkTask)")
-                    "targetDir" createValue new("File", raw("buildDir"), const("xcode-frameworks"))
-                    addRaw("from({ framework.outputDirectory })")
-                    addRaw("into(targetDir)")
-                }
+                packForXcode(iosTargetName)
                 addRaw { +"""tasks.getByName(${"build".quotified}).dependsOn(packForXcode)""" }
                 import("org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget")
 
