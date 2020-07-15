@@ -1,0 +1,13 @@
+package ${package}
+
+expect class Platform() {
+    val platform: String
+}
+
+#set( $TEMPLATE_BEGIN= '${' )
+
+class Greeting {
+    fun greeting(): String {
+        return "Hello, ${TEMPLATE_BEGIN}Platform().platform}!"
+    }
+}

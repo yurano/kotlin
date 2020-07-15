@@ -1,0 +1,89 @@
+/*
+ * Copyright 2010-2020 JetBrains s.r.o. and Kotlin Programming Language contributors.
+ * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
+ */
+
+package org.jetbrains.kotlin.tools.projectWizard.moduleConfigurators
+
+import org.jetbrains.annotations.NonNls
+import org.jetbrains.kotlin.tools.projectWizard.KotlinNewProjectWizardBundle
+import org.jetbrains.kotlin.tools.projectWizard.core.TaskResult
+import org.jetbrains.kotlin.tools.projectWizard.core.Writer
+import org.jetbrains.kotlin.tools.projectWizard.core.div
+import org.jetbrains.kotlin.tools.projectWizard.ir.buildsystem.KotlinBuildSystemPluginIR
+import org.jetbrains.kotlin.tools.projectWizard.plugins.kotlin.ModulesToIrConversionData
+import org.jetbrains.kotlin.tools.projectWizard.settings.buildsystem.Module
+import org.jetbrains.kotlin.tools.projectWizard.settings.buildsystem.ModuleKind
+import org.jetbrains.kotlin.tools.projectWizard.settings.javaPackage
+import java.nio.file.Path
+
+object MppModuleConfigurator : ModuleConfigurator {
+    var useTests: Boolean = false
+
+    override val moduleKind = ModuleKind.multiplatform
+
+    @NonNls
+    override val suggestedModuleName = "shared"
+
+    @NonNls
+    override val id = "multiplatform"
+    override val text = KotlinNewProjectWizardBundle.message("module.configurator.mpp")
+    override val canContainSubModules = true
+
+    override fun createKotlinPluginIR(configurationData: ModulesToIrConversionData, module: Module): KotlinBuildSystemPluginIR? =
+        KotlinBuildSystemPluginIR(
+            KotlinBuildSystemPluginIR.Type.multiplatform,
+            version = configurationData.kotlinVersion
+        )
+
+    override fun Writer.runArbitraryTask(
+        configurationData: ModulesToIrConversionData,
+        module: Module,
+        modulePath: Path
+    ): TaskResult<Unit> = org.jetbrains.kotlin.tools.projectWizard.core.computeM {
+        val javaPackage = module.javaPackage(configurationData.pomIr)
+        val settings = kotlin.collections.mapOf("package" to javaPackage.asCodePackage())
+
+        val androidKt = org.jetbrains.kotlin.tools.projectWizard.templates.FileTemplateDescriptor(
+            "mobileMpp/android.kt.vm",
+            "src" / "androidMain" / "kotlin" / "android.kt"
+        )
+
+        val androidTestKt = org.jetbrains.kotlin.tools.projectWizard.templates.FileTemplateDescriptor(
+            "mobileMpp/androidTest.kt.vm",
+            "src" / "androidTest" / "kotlin" / "androidTest.kt"
+        )
+
+        val iosKt = org.jetbrains.kotlin.tools.projectWizard.templates.FileTemplateDescriptor(
+            "mobileMpp/ios.kt.vm",
+            "src" / "iosMain" / "kotlin" / "ios.kt"
+        )
+
+        val iosTestKt = org.jetbrains.kotlin.tools.projectWizard.templates.FileTemplateDescriptor(
+            "mobileMpp/iosTest.kt.vm",
+            "src" / "iosTest" / "kotlin" / "iosTest.kt"
+        )
+
+        val commonKt = org.jetbrains.kotlin.tools.projectWizard.templates.FileTemplateDescriptor(
+            "mobileMpp/common.kt.vm",
+            "src" / "commonMain" / "kotlin" / "common.kt"
+        )
+
+        if (useTests) {
+            org.jetbrains.kotlin.tools.projectWizard.plugins.templates.TemplatesPlugin::addFileTemplates.execute(
+                kotlin.collections.listOf(
+                    org.jetbrains.kotlin.tools.projectWizard.templates.FileTemplate(androidTestKt, modulePath, settings),
+                    org.jetbrains.kotlin.tools.projectWizard.templates.FileTemplate(iosTestKt, modulePath, settings)
+                )
+            )
+        }
+
+        org.jetbrains.kotlin.tools.projectWizard.plugins.templates.TemplatesPlugin::addFileTemplates.execute(
+            kotlin.collections.listOf(
+                org.jetbrains.kotlin.tools.projectWizard.templates.FileTemplate(androidKt, modulePath, settings),
+                org.jetbrains.kotlin.tools.projectWizard.templates.FileTemplate(commonKt, modulePath, settings),
+                org.jetbrains.kotlin.tools.projectWizard.templates.FileTemplate(iosKt, modulePath, settings),
+            )
+        )
+    }
+}
