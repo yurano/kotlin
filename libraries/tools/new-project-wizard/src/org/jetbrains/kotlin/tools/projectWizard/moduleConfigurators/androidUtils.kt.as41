@@ -1,0 +1,46 @@
+/*
+ * Copyright 2010-2020 JetBrains s.r.o. and Kotlin Programming Language contributors.
+ * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
+ */
+
+package org.jetbrains.kotlin.tools.projectWizard.moduleConfigurators
+
+
+import org.jetbrains.kotlin.tools.projectWizard.core.*
+import org.jetbrains.kotlin.tools.projectWizard.ir.buildsystem.ArtifactBasedLibraryDependencyIR
+import org.jetbrains.kotlin.tools.projectWizard.ir.buildsystem.BuildSystemIR
+import org.jetbrains.kotlin.tools.projectWizard.ir.buildsystem.DependencyType
+import org.jetbrains.kotlin.tools.projectWizard.library.MavenArtifact
+import org.jetbrains.kotlin.tools.projectWizard.plugins.kotlin.ModulesToIrConversionData
+import org.jetbrains.kotlin.tools.projectWizard.settings.buildsystem.DefaultRepository
+import org.jetbrains.kotlin.tools.projectWizard.settings.buildsystem.Module
+import org.jetbrains.kotlin.tools.projectWizard.settings.javaPackage
+import org.jetbrains.kotlin.tools.projectWizard.settings.version.Version
+
+const val MODULE_WITH_MANIFEST = "androidMain"
+
+val JUNIT = Version.fromString("4.12")
+
+fun settingsForTemplateRendering(
+    configurationData: ModulesToIrConversionData,
+    module: Module, ): Map<String, String?> {
+
+    val sharedModule = configurationData.allModules.firstOrNull { it.configurator == MppModuleConfigurator }
+
+    val javaPackage = module.javaPackage(configurationData.pomIr)
+    val sharedPackage = sharedModule?.javaPackage(configurationData.pomIr)
+
+    return mapOf(
+        "package" to javaPackage.asCodePackage(),
+        "sharedPackage" to sharedPackage?.asCodePackage()
+    )
+}
+
+fun addDependencies(reader: Reader, configurationData: ModulesToIrConversionData, module: Module): List<BuildSystemIR> =
+    buildList {
+        +ArtifactBasedLibraryDependencyIR(
+            MavenArtifact(DefaultRepository.MAVEN_CENTRAL, "junit", "junit"),
+            version = JUNIT,
+            dependencyType = DependencyType.TEST
+        )
+    }

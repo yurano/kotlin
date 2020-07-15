@@ -100,7 +100,7 @@ interface AndroidModuleConfigurator : ModuleConfigurator,
 
         val androidManifestForLibraryXml = FileTemplateDescriptor(
             "android/AndroidManifestLibrary.xml.vm",
-            "src" / "main" / "AndroidManifest.xml"
+            "src" / MODULE_WITH_MANIFEST / "AndroidManifest.xml"
         )
 
         val colorsXml = FileTemplateDescriptor(
@@ -146,6 +146,9 @@ object AndroidTargetConfigurator : TargetConfigurator,
         +super.getConfiguratorSettings()
         +androidPlugin
     }
+
+    override fun createModuleIRs(reader: Reader, configurationData: ModulesToIrConversionData, module: Module): List<BuildSystemIR> =
+        addDependencies(reader, configurationData, module)
 
     override fun Writer.runArbitraryTask(
         configurationData: ModulesToIrConversionData,
