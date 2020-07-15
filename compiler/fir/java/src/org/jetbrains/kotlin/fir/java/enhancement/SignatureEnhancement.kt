@@ -14,6 +14,7 @@ import org.jetbrains.kotlin.fir.declarations.builder.FirPrimaryConstructorBuilde
 import org.jetbrains.kotlin.fir.declarations.builder.FirSimpleFunctionBuilder
 import org.jetbrains.kotlin.fir.declarations.builder.buildValueParameter
 import org.jetbrains.kotlin.fir.declarations.impl.FirDeclarationStatusImpl
+import org.jetbrains.kotlin.fir.declarations.impl.FirResolvedDeclarationStatusImpl
 import org.jetbrains.kotlin.fir.declarations.synthetic.FirSyntheticProperty
 import org.jetbrains.kotlin.fir.declarations.synthetic.buildSyntheticProperty
 import org.jetbrains.kotlin.fir.expressions.FirConstKind
@@ -35,6 +36,7 @@ import org.jetbrains.kotlin.load.java.typeEnhancement.*
 import org.jetbrains.kotlin.load.kotlin.SignatureBuildingComponents
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.utils.Jsr305State
+import org.jetbrains.kotlin.utils.addToStdlib.safeAs
 
 class FirSignatureEnhancement(
     private val owner: FirRegularClass,
@@ -98,6 +100,7 @@ class FirSignatureEnhancement(
                     isVar = firElement.isVar
                     isStatic = firElement.isStatic
                     annotations += firElement.annotations
+                    status = firElement.status
                 }
                 return symbol
             }
@@ -196,10 +199,23 @@ class FirSignatureEnhancement(
                 if (firMethod.isPrimary) {
                     FirPrimaryConstructorBuilder().apply {
                         returnTypeRef = newReturnTypeRef
-                        status = FirDeclarationStatusImpl(firMethod.visibility, Modality.FINAL).apply {
-                            isExpect = false
-                            isActual = false
-                            isInner = firMethod.isInner
+                        val resolvedStatus = firMethod.status.safeAs<FirResolvedDeclarationStatus>()
+                        if (resolvedStatus != null) {
+                            status = FirResolvedDeclarationStatusImpl(
+                                resolvedStatus.visibility,
+                                resolvedStatus.effectiveVisibility,
+                                Modality.FINAL
+                            ).apply {
+                                isExpect = false
+                                isActual = false
+                                isInner = firMethod.isInner
+                            }
+                        } else {
+                            status = FirDeclarationStatusImpl(firMethod.visibility, Modality.FINAL).apply {
+                                isExpect = false
+                                isActual = false
+                                isInner = firMethod.isInner
+                            }
                         }
                         this.symbol = symbol
                     }

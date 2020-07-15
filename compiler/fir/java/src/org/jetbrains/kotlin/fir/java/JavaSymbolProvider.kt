@@ -10,11 +10,12 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
 import org.jetbrains.kotlin.descriptors.ClassKind
+import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.descriptors.Visibility
 import org.jetbrains.kotlin.fir.*
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.builder.*
-import org.jetbrains.kotlin.fir.declarations.impl.FirDeclarationStatusImpl
+import org.jetbrains.kotlin.fir.declarations.impl.FirResolvedDeclarationStatusImpl
 import org.jetbrains.kotlin.fir.java.declarations.*
 import org.jetbrains.kotlin.fir.resolve.constructType
 import org.jetbrains.kotlin.fir.resolve.providers.AbstractFirSymbolProvider
@@ -173,10 +174,26 @@ class JavaSymbolProvider(
                     scopeProvider = this@JavaSymbolProvider.scopeProvider
                     val classTypeParameters = foundClass.typeParameters.convertTypeParameters(javaTypeParameterStack)
                     typeParameters += classTypeParameters
+                    var parentEffectiveVisibility: FirEffectiveVisibility? = null
                     if (!isStatic && parentClassSymbol != null) {
                         typeParameters += parentClassSymbol.fir.typeParameters.map {
                             buildOuterClassTypeParameterRef { symbol = it.symbol }
                         }
+                        parentEffectiveVisibility = parentClassSymbol.fir.effectiveVisibility
+                    }
+                    var effectiveVisibility = javaClass.visibility.firEffectiveVisibility(session, parentClassSymbol)
+                    parentEffectiveVisibility?.let {
+                        effectiveVisibility = parentEffectiveVisibility.lowerBound(effectiveVisibility)
+                    }
+                    status = FirResolvedDeclarationStatusImpl(
+                        javaClass.visibility,
+                        effectiveVisibility,
+                        javaClass.modality
+                    ).apply {
+                        isStatic = javaClass.isStatic
+                        isExpect = false
+                        isActual = false
+                        isOverride = false
                     }
                     addAnnotationsFrom(this@JavaSymbolProvider.session, javaClass, javaTypeParameterStack)
                     // TODO: may be we can process fields & methods later.
@@ -185,13 +202,19 @@ class JavaSymbolProvider(
                         val fieldName = javaField.name
                         val fieldId = CallableId(classId.packageFqName, classId.relativeClassName, fieldName)
                         val returnType = javaField.type
+                        var fieldEffectiveVisibility = javaField.visibility.firEffectiveVisibility(session, firSymbol)
+                        fieldEffectiveVisibility = effectiveVisibility.lowerBound(fieldEffectiveVisibility)
                         val firJavaDeclaration = when {
                             javaField.isEnumEntry -> buildEnumEntry {
                                 source = (javaField as? JavaElementImpl<*>)?.psi?.toFirPsiSourceElement()
                                 session = this@JavaSymbolProvider.session
                                 symbol = FirVariableSymbol(fieldId)
                                 name = fieldName
-                                status = FirDeclarationStatusImpl(javaField.visibility, javaField.modality).apply {
+                                status = FirResolvedDeclarationStatusImpl(
+                                    javaField.visibility,
+                                    fieldEffectiveVisibility,
+                                    javaField.modality
+                                ).apply {
                                     isStatic = javaField.isStatic
                                     isExpect = false
                                     isActual = false
@@ -207,6 +230,16 @@ class JavaSymbolProvider(
                                 session = this@JavaSymbolProvider.session
                                 symbol = FirFieldSymbol(fieldId)
                                 name = fieldName
+                                status = FirResolvedDeclarationStatusImpl(
+                                    javaField.visibility,
+                                    fieldEffectiveVisibility,
+                                    javaField.modality
+                                ).apply {
+                                    isStatic = javaField.isStatic
+                                    isExpect = false
+                                    isActual = false
+                                    isOverride = false
+                                }
                                 visibility = javaField.visibility
                                 modality = javaField.modality
                                 returnTypeRef = returnType.toFirJavaTypeRef(this@JavaSymbolProvider.session, javaTypeParameterStack)
@@ -222,6 +255,8 @@ class JavaSymbolProvider(
                         val methodId = CallableId(classId.packageFqName, classId.relativeClassName, methodName)
                         val methodSymbol = FirNamedFunctionSymbol(methodId)
                         val returnType = javaMethod.returnType
+                        var methodEffectiveVisibility = javaMethod.visibility.firEffectiveVisibility(session, firSymbol)
+                        methodEffectiveVisibility = effectiveVisibility.lowerBound(methodEffectiveVisibility)
                         val firJavaMethod = buildJavaMethod {
                             session = this@JavaSymbolProvider.session
                             source = (javaMethod as? JavaElementImpl<*>)?.psi?.toFirPsiSourceElement()
@@ -238,6 +273,16 @@ class JavaSymbolProvider(
                                     this@JavaSymbolProvider.session, index, javaTypeParameterStack,
                                 )
                             }
+                            status = FirResolvedDeclarationStatusImpl(
+                                javaMethod.visibility,
+                                methodEffectiveVisibility,
+                                javaMethod.modality
+                            ).apply {
+                                isStatic = javaMethod.isStatic
+                                isExpect = false
+                                isActual = false
+                                isOverride = false
+                            }
                         }
                         declarations += firJavaMethod
                     }
@@ -245,15 +290,29 @@ class JavaSymbolProvider(
                     val constructorId = CallableId(classId.packageFqName, classId.relativeClassName, classId.shortClassName)
 
                     fun prepareJavaConstructor(
+                        modality: Modality,
                         visibility: Visibility = this.visibility,
                         psi: PsiElement? = null,
                         isPrimary: Boolean = false,
                     ): FirJavaConstructorBuilder {
                         val constructorSymbol = FirConstructorSymbol(constructorId)
+                        val isThisStatic = this.isStatic
+                        var constructorEffectiveVisibility = visibility.firEffectiveVisibility(session, firSymbol)
+                        constructorEffectiveVisibility = effectiveVisibility.lowerBound(constructorEffectiveVisibility)
                         return FirJavaConstructorBuilder().apply {
                             source = psi?.toFirPsiSourceElement()
                             session = this@JavaSymbolProvider.session
                             symbol = constructorSymbol
+                            status = FirResolvedDeclarationStatusImpl(
+                                visibility,
+                                constructorEffectiveVisibility,
+                                modality
+                            ).apply {
+                                isStatic = isThisStatic
+                                isExpect = false
+                                isActual = false
+                                isOverride = false
+                            }
                             this.visibility = visibility
                             this.isPrimary = isPrimary
                             isInner = javaClass.outerClass != null && !javaClass.isStatic
@@ -270,11 +329,13 @@ class JavaSymbolProvider(
                     if (javaClassDeclaredConstructors.isEmpty()
                         && javaClass.classKind == ClassKind.CLASS
                         && javaClass.hasDefaultConstructor()) {
-                        declarations += prepareJavaConstructor(isPrimary = true).build()
+                        declarations += prepareJavaConstructor(modality = javaClass.modality, isPrimary = true).build()
                     }
                     for (javaConstructor in javaClassDeclaredConstructors) {
                         declarations += prepareJavaConstructor(
-                            visibility = javaConstructor.visibility, psi = (javaConstructor as? JavaElementImpl<*>)?.psi,
+                            modality = javaConstructor.modality,
+                            visibility = javaConstructor.visibility,
+                            psi = (javaConstructor as? JavaElementImpl<*>)?.psi,
                         ).apply {
                             this.typeParameters += javaConstructor.typeParameters.convertTypeParameters(javaTypeParameterStack)
                             addAnnotationsFrom(this@JavaSymbolProvider.session, javaConstructor, javaTypeParameterStack)

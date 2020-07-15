@@ -10,17 +10,13 @@ import org.jetbrains.kotlin.builtins.jvm.JvmBuiltInsSettings
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.descriptors.Visibilities
-import org.jetbrains.kotlin.fir.FirSession
-import org.jetbrains.kotlin.fir.declarations.FirDeclarationOrigin
-import org.jetbrains.kotlin.fir.declarations.FirResolvePhase
-import org.jetbrains.kotlin.fir.declarations.addDeclarations
+import org.jetbrains.kotlin.fir.*
+import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.builder.*
-import org.jetbrains.kotlin.fir.declarations.impl.FirDeclarationStatusImpl
+import org.jetbrains.kotlin.fir.declarations.impl.FirResolvedDeclarationStatusImpl
 import org.jetbrains.kotlin.fir.expressions.FirAnnotationCall
-import org.jetbrains.kotlin.fir.generateValueOfFunction
-import org.jetbrains.kotlin.fir.generateValuesFunction
-import org.jetbrains.kotlin.fir.resolve.providers.impl.FirCloneableSymbolProvider.Companion.CLONEABLE_CLASS_ID
 import org.jetbrains.kotlin.fir.resolve.providers.impl.FirCloneableSymbolProvider.Companion.CLONE
+import org.jetbrains.kotlin.fir.resolve.providers.impl.FirCloneableSymbolProvider.Companion.CLONEABLE_CLASS_ID
 import org.jetbrains.kotlin.fir.resolve.transformers.sealedInheritors
 import org.jetbrains.kotlin.fir.scopes.KotlinScopeProvider
 import org.jetbrains.kotlin.fir.symbols.CallableId
@@ -46,6 +42,9 @@ import org.jetbrains.kotlin.serialization.deserialization.ProtoEnumFlags
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedContainerSource
 import org.jetbrains.kotlin.serialization.deserialization.getName
 
+private fun ProtoBuf.Visibility.toEffectiveVisibility(symbol: FirRegularClassSymbol?, session: FirSession) =
+    ProtoEnumFlags.visibility(this).firEffectiveVisibility(session, symbol)
+
 fun deserializeClassToSymbol(
     classId: ClassId,
     classProto: ProtoBuf.Class,
@@ -56,13 +55,20 @@ fun deserializeClassToSymbol(
     scopeProvider: KotlinScopeProvider,
     parentContext: FirDeserializationContext? = null,
     containerSource: DeserializedContainerSource? = null,
-    deserializeNestedClass: (ClassId, FirDeserializationContext) -> FirRegularClassSymbol?
+    parentSymbol: FirRegularClassSymbol?,
+    parentEffectiveVisibility: FirEffectiveVisibility?,
+    deserializeNestedClass: (ClassId, FirDeserializationContext, FirRegularClassSymbol?, FirEffectiveVisibility?) -> FirRegularClassSymbol?
 ) {
     val flags = classProto.flags
     val kind = Flags.CLASS_KIND.get(flags)
     val modality = ProtoEnumFlags.modality(Flags.MODALITY.get(flags))
-    val status = FirDeclarationStatusImpl(
+    var effectiveVisibility = Flags.VISIBILITY.get(flags).toEffectiveVisibility(parentSymbol, session)
+    if (parentEffectiveVisibility != null) {
+        effectiveVisibility = parentEffectiveVisibility.lowerBound(effectiveVisibility)
+    }
+    val status = FirResolvedDeclarationStatusImpl(
         ProtoEnumFlags.visibility(Flags.VISIBILITY.get(flags)),
+        effectiveVisibility,
         modality
     ).apply {
         isExpect = Flags.IS_EXPECT_CLASS.get(flags)
@@ -123,26 +129,26 @@ fun deserializeClassToSymbol(
 
         addDeclarations(
             classProto.functionList.map {
-                classDeserializer.loadFunction(it, classProto)
+                classDeserializer.loadFunction(it, classProto, symbol, effectiveVisibility)
             }
         )
 
         addDeclarations(
             classProto.propertyList.map {
-                classDeserializer.loadProperty(it, classProto)
+                classDeserializer.loadProperty(it, classProto, symbol, effectiveVisibility)
             }
         )
 
         addDeclarations(
             classProto.constructorList.map {
-                classDeserializer.loadConstructor(it, classProto, this)
+                classDeserializer.loadConstructor(it, classProto, this, symbol, effectiveVisibility)
             }
         )
 
         addDeclarations(
             classProto.nestedClassNameList.mapNotNull { nestedNameId ->
                 val nestedClassId = classId.createNestedClassId(Name.identifier(nameResolver.getString(nestedNameId)))
-                deserializeNestedClass(nestedClassId, context)?.fir
+                deserializeNestedClass(nestedClassId, context, symbol, effectiveVisibility)?.fir
             }
         )
 
@@ -157,7 +163,11 @@ fun deserializeClassToSymbol(
                     returnTypeRef = buildResolvedTypeRef { type = enumType }
                     name = enumEntryName
                     this.symbol = FirVariableSymbol(CallableId(classId, enumEntryName))
-                    this.status = FirDeclarationStatusImpl(Visibilities.PUBLIC, Modality.FINAL).apply {
+                    this.status = FirResolvedDeclarationStatusImpl(
+                        Visibilities.PUBLIC,
+                        effectiveVisibility,
+                        Modality.FINAL
+                    ).apply {
                         isStatic = true
                     }
                     resolvePhase = FirResolvePhase.ANALYZED_DEPENDENCIES
@@ -172,7 +182,7 @@ fun deserializeClassToSymbol(
             generateValueOfFunction(session, classId.packageFqName, classId.relativeClassName)
         }
 
-        addCloneForArrayIfNeeded(classId)
+        addCloneForArrayIfNeeded(classId, effectiveVisibility)
         addSerializableIfNeeded(classId)
     }.also {
         if (isSealed) {
@@ -211,7 +221,7 @@ private fun FirRegularClassBuilder.addSerializableIfNeeded(classId: ClassId) {
     }
 }
 
-private fun FirRegularClassBuilder.addCloneForArrayIfNeeded(classId: ClassId) {
+private fun FirRegularClassBuilder.addCloneForArrayIfNeeded(classId: ClassId, effectiveVisibility: FirEffectiveVisibility) {
     if (classId.packageFqName != KotlinBuiltIns.BUILT_INS_PACKAGE_FQ_NAME) return
     if (classId.shortClassName !in ARRAY_CLASSES) return
     superTypeRefs += buildResolvedTypeRef {
@@ -241,7 +251,7 @@ private fun FirRegularClassBuilder.addCloneForArrayIfNeeded(classId: ClassId) {
                 isNullable = false
             )
         }
-        status = FirDeclarationStatusImpl(Visibilities.PUBLIC, Modality.FINAL).apply {
+        status = FirResolvedDeclarationStatusImpl(Visibilities.PUBLIC, effectiveVisibility, Modality.FINAL).apply {
             isOverride = true
         }
         name = CLONE

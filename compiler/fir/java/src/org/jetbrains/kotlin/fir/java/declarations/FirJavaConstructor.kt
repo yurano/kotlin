@@ -139,13 +139,6 @@ class FirJavaConstructorBuilder : FirConstructorBuilder() {
 
     @OptIn(FirImplementationDetail::class)
     override fun build(): FirJavaConstructor {
-        val status = FirDeclarationStatusImpl(visibility, Modality.FINAL).apply {
-            isExpect = false
-            isActual = false
-            isOverride = false
-            isInner = this@FirJavaConstructorBuilder.isInner
-        }
-
         return FirJavaConstructor(
             source,
             session,
@@ -181,12 +174,12 @@ class FirJavaConstructorBuilder : FirConstructorBuilder() {
             throw IllegalStateException()
         }
 
-    @Deprecated("Modification of 'status' has no impact for FirJavaConstructorBuilder", level = DeprecationLevel.HIDDEN)
-    override var status: FirDeclarationStatus
-        get() = throw IllegalStateException()
-        set(value) {
-            throw IllegalStateException()
-        }
+//    @Deprecated("Modification of 'status' has no impact for FirJavaConstructorBuilder", level = DeprecationLevel.HIDDEN)
+//    override var status: FirDeclarationStatus
+//        get() = throw IllegalStateException()
+//        set(value) {
+//            throw IllegalStateException()
+//        }
 
     @Deprecated("Modification of 'receiverTypeRef' has no impact for FirJavaConstructorBuilder", level = DeprecationLevel.HIDDEN)
     override var receiverTypeRef: FirTypeRef?

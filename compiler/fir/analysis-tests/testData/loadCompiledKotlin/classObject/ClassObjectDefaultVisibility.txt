@@ -22,9 +22,9 @@ public final class Outer : R|kotlin/Any| {
     }
 
     private final class Pri : R|kotlin/Any| {
-        public constructor(): R|test/Outer.Pri|
+        public[private] constructor(): R|test/Outer.Pri|
 
-        public final companion object Companion : R|kotlin/Any| {
+        public[private] final companion object Companion : R|kotlin/Any| {
             private constructor(): R|test/Outer.Pri.Companion|
 
         }
@@ -32,9 +32,9 @@ public final class Outer : R|kotlin/Any| {
     }
 
     protected final class Pro : R|kotlin/Any| {
-        public constructor(): R|test/Outer.Pro|
+        public[protected] constructor(): R|test/Outer.Pro|
 
-        public final companion object Companion : R|kotlin/Any| {
+        public[protected] final companion object Companion : R|kotlin/Any| {
             private constructor(): R|test/Outer.Pro.Companion|
 
         }
@@ -54,9 +54,9 @@ public final class Outer : R|kotlin/Any| {
 }
 
 private final class Pri : R|kotlin/Any| {
-    public constructor(): R|test/Pri|
+    public[private] constructor(): R|test/Pri|
 
-    public final companion object Companion : R|kotlin/Any| {
+    public[private] final companion object Companion : R|kotlin/Any| {
         private constructor(): R|test/Pri.Companion|
 
     }
@@ -72,3 +72,4 @@ public final class Pub : R|kotlin/Any| {
     }
 
 }
+

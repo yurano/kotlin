@@ -15,6 +15,7 @@ import org.jetbrains.kotlin.fir.contracts.impl.FirEmptyContractDescription
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.builder.FirSimpleFunctionBuilder
 import org.jetbrains.kotlin.fir.declarations.impl.FirDeclarationStatusImpl
+import org.jetbrains.kotlin.fir.declarations.impl.FirResolvedDeclarationStatusImpl
 import org.jetbrains.kotlin.fir.declarations.impl.FirSimpleFunctionImpl
 import org.jetbrains.kotlin.fir.expressions.FirAnnotationCall
 import org.jetbrains.kotlin.fir.expressions.FirBlock
@@ -92,7 +93,11 @@ class FirJavaMethodBuilder : FirSimpleFunctionBuilder() {
 
     @OptIn(FirImplementationDetail::class)
     override fun build(): FirJavaMethod {
-        val status = FirDeclarationStatusImpl(visibility, modality).apply {
+        status = if (status is FirResolvedDeclarationStatus) {
+            FirResolvedDeclarationStatusImpl(visibility, status.effectiveVisibility, modality ?: Modality.FINAL)
+        } else {
+            FirDeclarationStatusImpl(visibility, modality)
+        }.apply {
             isStatic = this@FirJavaMethodBuilder.isStatic
             isExpect = false
             isActual = false

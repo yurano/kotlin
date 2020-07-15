@@ -1,5 +1,5 @@
 internal final class IntInt : R|kotlin/Any| {
-    public constructor(): R|test/IntInt|
+    public[internal] constructor(): R|test/IntInt|
 
     internal final companion object Companion : R|kotlin/Any| {
         private constructor(): R|test/IntInt.Companion|
@@ -9,7 +9,7 @@ internal final class IntInt : R|kotlin/Any| {
 }
 
 internal final class IntPri : R|kotlin/Any| {
-    public constructor(): R|test/IntPri|
+    public[internal] constructor(): R|test/IntPri|
 
     private final companion object Companion : R|kotlin/Any| {
         private constructor(): R|test/IntPri.Companion|
@@ -19,9 +19,9 @@ internal final class IntPri : R|kotlin/Any| {
 }
 
 internal final class IntPub : R|kotlin/Any| {
-    public constructor(): R|test/IntPub|
+    public[internal] constructor(): R|test/IntPub|
 
-    public final companion object Companion : R|kotlin/Any| {
+    public[internal] final companion object Companion : R|kotlin/Any| {
         private constructor(): R|test/IntPub.Companion|
 
     }
@@ -29,9 +29,9 @@ internal final class IntPub : R|kotlin/Any| {
 }
 
 private final class PriInt : R|kotlin/Any| {
-    public constructor(): R|test/PriInt|
+    public[private] constructor(): R|test/PriInt|
 
-    internal final companion object Companion : R|kotlin/Any| {
+    internal[private] final companion object Companion : R|kotlin/Any| {
         private constructor(): R|test/PriInt.Companion|
 
     }
@@ -39,7 +39,7 @@ private final class PriInt : R|kotlin/Any| {
 }
 
 private final class PriPri : R|kotlin/Any| {
-    public constructor(): R|test/PriPri|
+    public[private] constructor(): R|test/PriPri|
 
     private final companion object Companion : R|kotlin/Any| {
         private constructor(): R|test/PriPri.Companion|
@@ -49,9 +49,9 @@ private final class PriPri : R|kotlin/Any| {
 }
 
 private final class PriPub : R|kotlin/Any| {
-    public constructor(): R|test/PriPub|
+    public[private] constructor(): R|test/PriPub|
 
-    public final companion object Companion : R|kotlin/Any| {
+    public[private] final companion object Companion : R|kotlin/Any| {
         private constructor(): R|test/PriPub.Companion|
 
     }
@@ -87,3 +87,4 @@ public final class PubPub : R|kotlin/Any| {
     }
 
 }
+

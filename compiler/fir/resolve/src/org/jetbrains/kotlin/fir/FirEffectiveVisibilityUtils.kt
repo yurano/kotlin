@@ -14,6 +14,9 @@ import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.resolve.declaredMemberScopeProvider
 import org.jetbrains.kotlin.fir.resolve.firSymbolProvider
 import org.jetbrains.kotlin.fir.resolve.toSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
 import org.jetbrains.kotlin.fir.types.ConeClassLikeType
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
 import org.jetbrains.kotlin.fir.types.ConeKotlinTypeProjection
@@ -30,6 +33,9 @@ fun FirRegularClass.firEffectiveVisibility(session: FirSession, checkPublishedAp
 
 fun Visibility.firEffectiveVisibility(session: FirSession, declaration: FirMemberDeclaration?): FirEffectiveVisibility =
     firEffectiveVisibility(session, normalize(), declaration)
+
+fun Visibility.firEffectiveVisibility(session: FirSession, containerSymbol: FirClassLikeSymbol<*>?): FirEffectiveVisibility =
+    normalize().forVisibility(session, containerSymbol)
 
 fun ConeKotlinType.leastPermissiveDescriptor(session: FirSession, base: FirEffectiveVisibility): DeclarationWithRelation? =
     dependentDeclarations(session).leastPermissive(session, base)
@@ -69,12 +75,26 @@ private fun FirMemberDeclaration.containingClass(session: FirSession): FirRegula
         ?: (session.declaredMemberScopeProvider.getClassByClassId(classId) as? FirRegularClass)
 }
 
+private fun FirClassLikeSymbol<*>.containingClass(session: FirSession): FirRegularClass? {
+    val classId = when (this) {
+        is FirRegularClassSymbol -> classId.outerClassId
+        is FirCallableSymbol<*> -> callableId.classId
+        else -> null
+    } ?: return null
+    if (classId.isLocal) return null
+    return (session.firSymbolProvider.getClassLikeSymbolByFqName(classId)?.fir as? FirRegularClass)
+        ?: (session.declaredMemberScopeProvider.getClassByClassId(classId) as? FirRegularClass)
+}
+
+private fun Visibility.forVisibility(session: FirSession, declaration: FirMemberDeclaration?) =
+    forVisibility(session, declaration?.containingClass(session)?.symbol)
+
 private fun Visibility.forVisibility(
-    session: FirSession, declaration: FirMemberDeclaration?
+    session: FirSession, containerSymbol: FirClassLikeSymbol<*>?
 ): FirEffectiveVisibility =
     when (this) {
         Visibilities.PRIVATE, Visibilities.PRIVATE_TO_THIS, Visibilities.INVISIBLE_FAKE -> Private
-        Visibilities.PROTECTED -> Protected(declaration?.containingClass(session))
+        Visibilities.PROTECTED -> Protected(containerSymbol, session)
         Visibilities.INTERNAL -> Internal
         Visibilities.PUBLIC -> Public
         Visibilities.LOCAL -> Local

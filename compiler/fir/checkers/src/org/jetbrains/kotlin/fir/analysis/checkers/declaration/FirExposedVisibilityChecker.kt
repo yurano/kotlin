@@ -174,8 +174,9 @@ object FirExposedVisibilityChecker : FirMemberDeclarationChecker() {
             ?: return null
 
         if (
-            fir is FirMemberDeclaration &&
-            fir.effectiveVisibility != FirEffectiveVisibility.Default // because abstract interface List<out T> returns it here
+            fir is FirMemberDeclaration
+//            fir is FirMemberDeclaration &&
+//            fir.effectiveVisibility != FirEffectiveVisibility.Default // because abstract interface List<out T> returns it here
         ) {
             when (fir.effectiveVisibility.relation(base)) {
                 FirEffectiveVisibility.Permissiveness.LESS,
