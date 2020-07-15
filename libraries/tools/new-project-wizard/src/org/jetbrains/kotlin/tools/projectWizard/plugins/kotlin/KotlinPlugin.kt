@@ -1,3 +1,8 @@
+/*
+ * Copyright 2010-2020 JetBrains s.r.o. and Kotlin Programming Language contributors.
+ * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
+ */
+
 package org.jetbrains.kotlin.tools.projectWizard.plugins.kotlin
 
 import org.jetbrains.kotlin.tools.projectWizard.KotlinNewProjectWizardBundle
@@ -6,11 +11,13 @@ import org.jetbrains.kotlin.tools.projectWizard.core.*
 import org.jetbrains.kotlin.tools.projectWizard.core.entity.ValidationResult
 import org.jetbrains.kotlin.tools.projectWizard.core.entity.fold
 import org.jetbrains.kotlin.tools.projectWizard.core.entity.settingValidator
-import org.jetbrains.kotlin.tools.projectWizard.core.service.*
+import org.jetbrains.kotlin.tools.projectWizard.core.service.KotlinVersionKind
+import org.jetbrains.kotlin.tools.projectWizard.core.service.KotlinVersionProviderService
+import org.jetbrains.kotlin.tools.projectWizard.core.service.WizardKotlinVersion
+import org.jetbrains.kotlin.tools.projectWizard.core.service.isStable
 import org.jetbrains.kotlin.tools.projectWizard.ir.buildsystem.BuildFileIR
 import org.jetbrains.kotlin.tools.projectWizard.ir.buildsystem.RepositoryIR
 import org.jetbrains.kotlin.tools.projectWizard.ir.buildsystem.withIrs
-import org.jetbrains.kotlin.tools.projectWizard.moduleConfigurators.ModuleConfigurator
 import org.jetbrains.kotlin.tools.projectWizard.phases.GenerationPhase
 import org.jetbrains.kotlin.tools.projectWizard.plugins.StructurePlugin
 import org.jetbrains.kotlin.tools.projectWizard.plugins.buildSystem.BuildSystemPlugin
@@ -19,8 +26,6 @@ import org.jetbrains.kotlin.tools.projectWizard.plugins.pomIR
 import org.jetbrains.kotlin.tools.projectWizard.plugins.projectPath
 import org.jetbrains.kotlin.tools.projectWizard.settings.DisplayableSettingItem
 import org.jetbrains.kotlin.tools.projectWizard.settings.buildsystem.*
-import org.jetbrains.kotlin.tools.projectWizard.settings.version.Version
-import java.nio.file.Path
 
 class KotlinPlugin(context: Context) : Plugin(context) {
     val version by property(
@@ -109,14 +114,9 @@ class KotlinPlugin(context: Context) : Plugin(context) {
     val createSourcesetDirectories by pipelineTask(GenerationPhase.PROJECT_GENERATION) {
         runAfter(KotlinPlugin::createModules)
         withAction {
-            fun Path.createKotlinAndResourceDirectories(moduleConfigurator: ModuleConfigurator) = with(service<FileSystemWizardService>()) {
-                createDirectory(this@createKotlinAndResourceDirectories / moduleConfigurator.kotlinDirectoryName) andThen
-                        createDirectory(this@createKotlinAndResourceDirectories / moduleConfigurator.resourcesDirectoryName)
-            }
-
             forEachModule { moduleIR ->
                 moduleIR.sourcesets.mapSequenceIgnore { sourcesetIR ->
-                    sourcesetIR.path.createKotlinAndResourceDirectories(moduleIR.originalModule.configurator)
+                    createKotlinAndResourceDirectories(moduleIR.originalModule.configurator, sourcesetIR.path)
                 }
             }
         }
