@@ -110,3 +110,9 @@ org.jetbrains.kotlin.idea.refactoring.move.MoveTestGenerated.testKotlin_moveTopL
 org.jetbrains.kotlin.idea.refactoring.pullUp.PullUpTestGenerated.K2K.testAccidentalOverrides, Unprocessed,, FLAKY
 org.jetbrains.kotlin.idea.refactoring.rename.RenameTestGenerated.testOverloadsWithSameOrigin_OverloadsWithSameOrigin, Bad imports after rename,, FLAKY
 org.jetbrains.kotlin.idea.intentions.IntentionTestGenerated.ConvertSealedClassToEnum.testWithNonObjectInheritors, Enum reorder,, FLAKY
+"org.jetbrains.kotlin.gradle.HierarchicalMultiplatformProjectImportingTest.testImportIntermediateModules[1: Gradle-4.9, KotlinGradlePlugin-latest stable]", KMM-304,,
+"org.jetbrains.kotlin.gradle.HierarchicalMultiplatformProjectImportingTest.testImportIntermediateModules[4: Gradle-5.6.4, KotlinGradlePlugin-latest stable]", KMM-304,,
+"org.jetbrains.kotlin.gradle.NewMultiplatformProjectImportingTest.testProjectDependency[1: Gradle-4.9, KotlinGradlePlugin-latest stable]", KMM-304,,
+"org.jetbrains.kotlin.gradle.NewMultiplatformProjectImportingTest.testProjectDependency[4: Gradle-5.6.4, KotlinGradlePlugin-latest stable]", KMM-304,,
+"org.jetbrains.kotlin.gradle.NewMultiplatformProjectImportingTest.testNestedDependencies[1: Gradle-4.9, KotlinGradlePlugin-latest stable]", KMM-304,,
+"org.jetbrains.kotlin.gradle.NewMultiplatformProjectImportingTest.testNestedDependencies[4: Gradle-5.6.4, KotlinGradlePlugin-latest stable]", KMM-304,,
