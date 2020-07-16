@@ -44,7 +44,8 @@ fun createResolveSessionForFiles(
         TestModule(project, addBuiltIns)
     val platformParameters = JvmPlatformParameters(
         packagePartProviderFactory = { PackagePartProvider.Empty },
-        moduleByJavaClass = { testModule }
+        moduleByJavaClass = { testModule },
+        loadBuiltInsFromDependencies = addBuiltIns
     )
 
     val resolverForProject = ResolverForSingleModuleProject(

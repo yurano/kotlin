@@ -117,8 +117,11 @@ class JvmResolverForModuleFactory(
         val providersForModule = arrayListOf(
             container.get<ResolveSession>().packageFragmentProvider,
             container.get<JavaDescriptorResolver>().packageFragmentProvider,
-            container.get<JvmBuiltInsPackageFragmentProvider>(),
         )
+
+        if (platformParameters.loadBuiltInsFromDependencies) {
+            providersForModule += container.get<JvmBuiltInsPackageFragmentProvider>()
+        }
 
         providersForModule +=
             PackageFragmentProviderExtension.getInstances(project)
