@@ -90,7 +90,7 @@ class MultiModuleJavaAnalysisCustomTest : KtUsefulTestCase() {
         val environment = createEnvironment(moduleDirs)
         val modules = setupModules(environment, moduleDirs)
         val projectContext = ProjectContext(environment.project, "MultiModuleJavaAnalysisTest")
-        val builtIns = JvmBuiltIns(projectContext.storageManager, JvmBuiltIns.Kind.FROM_CLASS_LOADER)
+        val builtIns = JvmBuiltIns(projectContext.storageManager, JvmBuiltIns.Kind.FROM_DEPENDENCIES)
         val platformParameters = JvmPlatformParameters(
             packagePartProviderFactory = { PackagePartProvider.Empty },
             moduleByJavaClass = { javaClass ->
