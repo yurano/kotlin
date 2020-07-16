@@ -96,7 +96,7 @@ sealed class ModuleDependencyType(
 
 
             return irsList {
-                packForXcode(iosTargetName)
+                +packForXcode(iosTargetName)
                 addRaw { +"""tasks.getByName(${"build".quotified}).dependsOn(packForXcode)""" }
                 import("org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget")
 
