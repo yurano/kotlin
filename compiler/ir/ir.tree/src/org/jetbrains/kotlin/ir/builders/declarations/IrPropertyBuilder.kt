@@ -7,6 +7,7 @@ package org.jetbrains.kotlin.ir.builders.declarations
 
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.ir.declarations.IrProperty
+import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedContainerSource
 
 class IrPropertyBuilder : IrDeclarationBuilder() {
     var modality: Modality = Modality.FINAL
@@ -18,6 +19,8 @@ class IrPropertyBuilder : IrDeclarationBuilder() {
     var isExternal: Boolean = false
     var isExpect: Boolean = false
     var isFakeOverride: Boolean = false
+
+    var containerSource: DeserializedContainerSource? = null
 
     fun updateFrom(from: IrProperty) {
         super.updateFrom(from)

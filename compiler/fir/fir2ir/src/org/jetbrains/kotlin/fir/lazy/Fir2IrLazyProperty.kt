@@ -25,6 +25,7 @@ import org.jetbrains.kotlin.ir.util.isInterface
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformer
 import org.jetbrains.kotlin.ir.visitors.IrElementVisitor
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedContainerSource
 
 class Fir2IrLazyProperty(
     components: Fir2IrComponents,
@@ -33,7 +34,8 @@ class Fir2IrLazyProperty(
     origin: IrDeclarationOrigin,
     fir: FirProperty,
     symbol: Fir2IrPropertySymbol,
-    override val isFakeOverride: Boolean
+    override val isFakeOverride: Boolean,
+    override val containerSource: DeserializedContainerSource?
 ) : AbstractFir2IrLazyDeclaration<FirProperty, IrProperty>(
     components, startOffset, endOffset, origin, fir, symbol
 ), IrProperty {

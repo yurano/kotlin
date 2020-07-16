@@ -633,7 +633,8 @@ class Fir2IrDeclarationStorage(
                     isDelegated = property.delegate != null,
                     isExternal = property.isExternal,
                     isExpect = property.isExpect,
-                    isFakeOverride = origin == IrDeclarationOrigin.FAKE_OVERRIDE
+                    isFakeOverride = origin == IrDeclarationOrigin.FAKE_OVERRIDE,
+                    containerSource = property.containerSource
                 ).apply {
                     metadata = FirMetadataSource.Variable(property)
                     convertAnnotationsFromLibrary(property)
@@ -968,7 +969,7 @@ class Fir2IrDeclarationStorage(
                                     firVariableSymbol is FirPropertySymbol && firVariableSymbol.isFakeOverride &&
                                             firVariableSymbol.callableId != firVariableSymbol.overriddenSymbol?.callableId
                                 Fir2IrLazyProperty(
-                                    components, startOffset, endOffset, parentOrigin, fir, symbol, isFakeOverride
+                                    components, startOffset, endOffset, parentOrigin, fir, symbol, isFakeOverride, fir.containerSource
                                 ).apply {
                                     parent = irParent
                                 }

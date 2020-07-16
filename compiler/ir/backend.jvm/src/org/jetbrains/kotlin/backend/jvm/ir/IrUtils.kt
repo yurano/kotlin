@@ -323,6 +323,7 @@ fun IrSimpleFunction.copyCorrespondingPropertyFrom(source: IrSimpleFunction) {
     correspondingPropertySymbol = buildProperty(property.symbol.descriptor) {
         name = property.name
         updateFrom(property)
+        containerSource = property.containerSource
     }.apply {
         parent = target.parent
         when {

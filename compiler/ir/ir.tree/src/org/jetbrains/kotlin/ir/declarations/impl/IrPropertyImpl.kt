@@ -27,6 +27,7 @@ import org.jetbrains.kotlin.ir.symbols.IrPropertySymbol
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformer
 import org.jetbrains.kotlin.ir.visitors.IrElementVisitor
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedContainerSource
 
 abstract class IrPropertyCommonImpl(
     startOffset: Int,
@@ -41,7 +42,8 @@ abstract class IrPropertyCommonImpl(
     override val isDelegated: Boolean,
     override val isExternal: Boolean,
     override val isExpect: Boolean,
-    override val isFakeOverride: Boolean = origin == IrDeclarationOrigin.FAKE_OVERRIDE
+    override val isFakeOverride: Boolean = origin == IrDeclarationOrigin.FAKE_OVERRIDE,
+    override val containerSource: DeserializedContainerSource? = null
 ) : IrDeclarationBase<PropertyCarrier>(startOffset, endOffset, origin),
     IrProperty,
     PropertyCarrier {
@@ -121,8 +123,13 @@ class IrPropertyImpl(
     override val isDelegated: Boolean,
     override val isExternal: Boolean,
     override val isExpect: Boolean = false,
-    override val isFakeOverride: Boolean = origin == IrDeclarationOrigin.FAKE_OVERRIDE
-) : IrPropertyCommonImpl(startOffset, endOffset, origin, name, visibility, modality, isVar, isConst, isLateinit, isDelegated, isExternal, isExpect, isFakeOverride) {
+    override val isFakeOverride: Boolean = origin == IrDeclarationOrigin.FAKE_OVERRIDE,
+    containerSource: DeserializedContainerSource? = null
+) : IrPropertyCommonImpl(
+    startOffset, endOffset, origin, name, visibility, modality,
+    isVar, isConst, isLateinit, isDelegated, isExternal, isExpect, isFakeOverride,
+    containerSource
+) {
 
     init {
         symbol.bind(this)

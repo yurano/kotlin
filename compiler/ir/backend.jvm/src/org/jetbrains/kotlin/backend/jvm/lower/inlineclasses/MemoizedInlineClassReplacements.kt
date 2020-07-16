@@ -220,6 +220,7 @@ class MemoizedInlineClassReplacements(private val mangleReturnTypes: Boolean) {
                     buildProperty(propertySymbol.descriptor) {
                         name = propertySymbol.owner.name
                         updateFrom(propertySymbol.owner)
+                        containerSource = propertySymbol.owner.containerSource
                     }.apply {
                         parent = propertySymbol.owner.parent
                     }
