@@ -11,6 +11,7 @@ import com.intellij.psi.search.GlobalSearchScope
 import org.jetbrains.kotlin.analyzer.*
 import org.jetbrains.kotlin.analyzer.common.CommonAnalysisParameters
 import org.jetbrains.kotlin.analyzer.common.configureCommonSpecificComponents
+import org.jetbrains.kotlin.builtins.jvm.JvmBuiltInsPackageFragmentProvider
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.container.*
 import org.jetbrains.kotlin.context.ModuleContext
@@ -131,7 +132,11 @@ class CompositeResolverForModuleFactory(
     }
 
     private fun getJvmProvidersIfAny(container: StorageComponentContainer): List<PackageFragmentProvider> =
-        if (targetPlatform.has<JvmPlatform>()) listOf(container.get<JavaDescriptorResolver>().packageFragmentProvider) else emptyList()
+        if (targetPlatform.has<JvmPlatform>()) listOf(
+            container.get<JavaDescriptorResolver>().packageFragmentProvider,
+            container.get<JvmBuiltInsPackageFragmentProvider>()
+        ) else
+            emptyList()
 
     private fun getNativeProvidersIfAny(moduleInfo: ModuleInfo, container: StorageComponentContainer): List<PackageFragmentProvider> {
         if (!targetPlatform.has<NativePlatform>()) return emptyList()
@@ -192,8 +197,7 @@ class CompositeResolverForModuleFactory(
         if (targetPlatform.has<JvmPlatform>()) {
             configureJavaSpecificComponents(
                 moduleContext, moduleClassResolver!!, languageVersionSettings, configureJavaClassFinder = null,
-                javaClassTracker = null,
-                useBuiltInsProvider = false
+                javaClassTracker = null
             )
         }
 

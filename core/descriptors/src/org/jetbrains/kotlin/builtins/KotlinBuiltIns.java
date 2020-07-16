@@ -129,7 +129,8 @@ public abstract class KotlinBuiltIns {
         builtInsModule.setDependencies(builtInsModule);
     }
 
-    public void setBuiltInsModule(@NotNull final ModuleDescriptorImpl module) {
+    public void
+    setBuiltInsModule(@NotNull final ModuleDescriptorImpl module) {
         storageManager.compute(new Function0<Void>() {
             @Override
             public Void invoke() {

@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.resolve.jvm
 
 import org.jetbrains.kotlin.analyzer.*
+import org.jetbrains.kotlin.builtins.jvm.JvmBuiltInsPackageFragmentProvider
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.container.get
 import org.jetbrains.kotlin.context.ModuleContext
@@ -41,6 +42,8 @@ class JvmPlatformParameters(
     val moduleByJavaClass: (JavaClass) -> ModuleInfo?,
     // params: referenced module info of target class, context module info of current resolver
     val resolverForReferencedModule: ((ModuleInfo, ModuleInfo) -> ResolverForModule?)? = null,
+    // can be false only in weird cases, e.g. in tests
+    val loadBuiltInsFromDependencies: Boolean = true,
 ) : PlatformAnalysisParameters
 
 
@@ -108,15 +111,13 @@ class JvmResolverForModuleFactory(
             ExpectActualTracker.DoNothing,
             packagePartProvider,
             languageVersionSettings,
-            useBuiltInsProvider = false // TODO: load built-ins from module dependencies in IDE
+            useBuiltInsProvider = platformParameters.loadBuiltInsFromDependencies
         )
 
-        val resolveSession = container.get<ResolveSession>()
-        val javaDescriptorResolver = container.get<JavaDescriptorResolver>()
-
         val providersForModule = arrayListOf(
-            resolveSession.packageFragmentProvider,
-            javaDescriptorResolver.packageFragmentProvider
+            container.get<ResolveSession>().packageFragmentProvider,
+            container.get<JavaDescriptorResolver>().packageFragmentProvider,
+            container.get<JvmBuiltInsPackageFragmentProvider>(),
         )
 
         providersForModule +=

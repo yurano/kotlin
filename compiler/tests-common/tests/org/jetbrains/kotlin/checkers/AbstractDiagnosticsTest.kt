@@ -476,8 +476,7 @@ abstract class AbstractDiagnosticsTest : BaseDiagnosticsTest() {
             CompilerEnvironment, LookupTracker.DO_NOTHING,
             ExpectActualTracker.DoNothing,
             environment.createPackagePartProvider(moduleContentScope),
-            languageVersionSettings,
-            useBuiltInsProvider = true
+            languageVersionSettings
         )
 
         container.initJvmBuiltInsForTopDownAnalysis()

@@ -187,7 +187,6 @@ object TopDownAnalyzerFacadeForJVM {
                 dependenciesContext, trace, DeclarationProviderFactory.EMPTY, dependencyScope, moduleClassResolver,
                 targetEnvironment, lookupTracker, expectActualTracker,
                 packagePartProvider(dependencyScope), languageVersionSettings,
-                useBuiltInsProvider = true,
                 configureJavaClassFinder = configureJavaClassFinder,
                 implicitsResolutionFilter = implicitsResolutionFilter
             )
@@ -221,7 +220,6 @@ object TopDownAnalyzerFacadeForJVM {
             moduleContext, trace, declarationProviderFactory(storageManager, files), sourceScope, moduleClassResolver,
             targetEnvironment, lookupTracker, expectActualTracker,
             partProvider, languageVersionSettings,
-            useBuiltInsProvider = true,
             configureJavaClassFinder = configureJavaClassFinder,
             javaClassTracker = configuration[JVMConfigurationKeys.JAVA_CLASSES_TRACKER],
             implicitsResolutionFilter = implicitsResolutionFilter

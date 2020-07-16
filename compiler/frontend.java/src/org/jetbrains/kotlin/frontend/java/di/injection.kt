@@ -62,7 +62,7 @@ fun createContainerForLazyResolveWithJava(
     expectActualTracker: ExpectActualTracker,
     packagePartProvider: PackagePartProvider,
     languageVersionSettings: LanguageVersionSettings,
-    useBuiltInsProvider: Boolean,
+    useBuiltInsProvider: Boolean = true,
     configureJavaClassFinder: (StorageComponentContainer.() -> Unit)? = null,
     javaClassTracker: JavaClassesTracker? = null,
     implicitsResolutionFilter: ImplicitsExtensionsResolutionFilter? = null,
@@ -84,6 +84,7 @@ fun createContainerForLazyResolveWithJava(
         javaClassTracker, useBuiltInsProvider
     )
 
+
     targetEnvironment.configure(this)
 
 }.apply {
@@ -100,7 +101,7 @@ fun StorageComponentContainer.configureJavaSpecificComponents(
     languageVersionSettings: LanguageVersionSettings,
     configureJavaClassFinder: (StorageComponentContainer.() -> Unit)?,
     javaClassTracker: JavaClassesTracker?,
-    useBuiltInsProvider: Boolean
+    useBuiltInsProvider: Boolean = true
 ) {
     useImpl<JavaDescriptorResolver>()
     useImpl<DeserializationComponentsForJava>()
@@ -125,6 +126,7 @@ fun StorageComponentContainer.configureJavaSpecificComponents(
         useInstance((moduleContext.module.builtIns as JvmBuiltIns).settings)
         useImpl<JvmBuiltInsPackageFragmentProvider>()
     }
+
     useImpl<OptionalAnnotationPackageFragmentProvider>()
 
     useInstance(javaClassTracker ?: JavaClassesTracker.Default)

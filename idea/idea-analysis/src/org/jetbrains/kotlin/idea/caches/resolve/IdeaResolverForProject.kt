@@ -149,6 +149,7 @@ class IdeaResolverForProject(
                 val isAdditionalBuiltInsFeaturesSupported = module.supportsAdditionalBuiltInsMembers(projectContextFromSdkResolver.project)
 
                 newBuiltIns.initialize(sdkDescriptor, isAdditionalBuiltInsFeaturesSupported)
+//                newBuiltIns.builtInsModule = sdkDescriptor
             }
 
             return@compute newBuiltIns
