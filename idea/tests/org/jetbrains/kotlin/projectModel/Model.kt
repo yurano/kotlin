@@ -13,6 +13,7 @@ import org.jetbrains.kotlin.platform.CommonPlatforms
 import org.jetbrains.kotlin.platform.TargetPlatform
 import org.jetbrains.kotlin.platform.js.JsPlatforms
 import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
+import org.jetbrains.kotlin.platform.jvm.isJvm
 import org.jetbrains.kotlin.utils.Printer
 import java.io.File
 

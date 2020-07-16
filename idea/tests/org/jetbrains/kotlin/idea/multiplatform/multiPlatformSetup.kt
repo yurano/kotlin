@@ -91,17 +91,26 @@ fun AbstractMultiModuleTest.doSetup(projectModel: ProjectResolveModel) {
     }.toMap()
 
     for ((resolveModule, ideaModule) in resolveModulesToIdeaModules.entries) {
+        var dependsOnFullJdkAlready: Boolean = false
+
         resolveModule.dependencies.closure(preserveOrder = true) { it.to.dependencies }.forEach {
             when (val to = it.to) {
-                FullJdk -> ConfigLibraryUtil.configureSdk(ideaModule, PluginTestCaseBase.addJdk(testRootDisposable) {
-                    PluginTestCaseBase.jdk(TestJdkKind.FULL_JDK)
-                })
+                FullJdk -> {
+                    ConfigLibraryUtil.configureSdk(ideaModule, PluginTestCaseBase.addJdk(testRootDisposable) {
+                        PluginTestCaseBase.jdk(TestJdkKind.FULL_JDK)
+                    })
+                    dependsOnFullJdkAlready = true
+                }
 
                 is ResolveLibrary -> ideaModule.addLibrary(to.root, to.name, to.kind)
 
                 else -> ideaModule.addDependency(resolveModulesToIdeaModules[to]!!)
             }
         }
+
+        if (!dependsOnFullJdkAlready) ConfigLibraryUtil.configureSdk(ideaModule, PluginTestCaseBase.addJdk(testRootDisposable) {
+            PluginTestCaseBase.mockJdk()
+        })
     }
 
     for ((resolveModule, ideaModule) in resolveModulesToIdeaModules.entries) {
@@ -132,7 +141,9 @@ private fun AbstractMultiModuleTest.doSetupProject(rootInfos: List<RootInfo>) {
                         platform.isCommon() -> module.addLibrary(
                             ForTestCompileRuntime.stdlibCommonForTests(), kind = CommonLibraryKind
                         )
-                        platform.isJvm() -> module.addLibrary(ForTestCompileRuntime.runtimeJarForTests())
+                        platform.isJvm() ->{
+                            module.addLibrary(ForTestCompileRuntime.runtimeJarForTests())
+                        }
                         platform.isJs() -> module.addLibrary(ForTestCompileRuntime.stdlibJsForTests(), kind = JSLibraryKind)
                         else -> error("Unknown platform $this")
                     }
@@ -183,6 +194,12 @@ private fun AbstractMultiModuleTest.createModuleWithRoots(
         if (moduleId.platform.isJs() && isTestRoot) {
             setupJsTestOutput(module)
         }
+    }
+
+    if (moduleId.platform.isJvm()) {
+        ConfigLibraryUtil.configureSdk(module, PluginTestCaseBase.addJdk(testRootDisposable) {
+            PluginTestCaseBase.mockJdk()
+        })
     }
     return module
 }
